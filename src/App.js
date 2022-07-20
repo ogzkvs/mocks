@@ -1,68 +1,42 @@
 import * as React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Home from './pages/Home';
+import Details from './pages/Details';
 import Services from './pages/Services';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const {width, height} = Dimensions.get('window');
+import Create from './pages/Create';
 
 const Stack = createNativeStackNavigator();
-function LogoTitle() {
-  return (
-    <View style={styles.container}>
-      <View style={styles.txtView}>
-        <Text style={styles.txt}>Services</Text>
-      </View>
-      <View style={styles.optionView}>
-        <TouchableOpacity>
-          <Ionicons name="options" size={25} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
 
-function App() {
+const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
           name="Home"
           component={Home}
-          options={{headerTitleAlign: 'center', title: 'Home'}}
+          options={{headerTitleAlign: 'center', title: 'UPayments Store'}}
+        />
+        <Stack.Screen
+          name="Details"
+          component={Details}
+          options={{headerTitleAlign: 'center', title: 'Details'}}
         />
         <Stack.Screen
           name="Services"
           component={Services}
-          options={{
-            headerTitle: props => <LogoTitle {...props} />,
-          }}
+          options={{headerTitleAlign: 'center', title: 'Services'}}
+        />
+        <Stack.Screen
+          name="Create"
+          component={Create}
+          options={{headerTitleAlign: 'center', title: 'Create'}}
         />
       </Stack.Navigator>
     </NavigationContainer>
   );
-}
+};
 
 export default App;
-
-const styles = StyleSheet.create({
-  txt: {
-    fontSize: 20,
-    color: '#363A3D',
-    fontWeight: '400',
-    fontFamily: 'Product Sans',
-  },
-  container: {
-    flexDirection: 'row',
-  },
-  txtView: {width: '70%', alignItems: 'center'},
-  optionView: {width: '24%', alignItems: 'center'},
-});

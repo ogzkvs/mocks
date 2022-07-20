@@ -1,5 +1,5 @@
 const settings = {
-  api: 'https://api-test.boatmate.io/v2/api/mocks/2207',
+  api: 'https://62286b649fd6174ca82321f1.mockapi.io/case-study',
 };
 
 export default settings;

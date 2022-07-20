@@ -8,19 +8,27 @@ import {
   SafeAreaView,
   FlatList,
   Image,
+  ScrollView,
 } from 'react-native';
 import {get} from '../service';
-import moment from 'moment';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import SelectCategory from '../components/SelectCategory';
 
 const {width, height} = Dimensions.get('window');
 
-const Services = () => {
-  const [categories, setCategories] = useState([]);
+const Services = ({navigation}) => {
   const [services, setServices] = useState([]);
+  const [datalist, setDatalist] = useState();
   const [status, setStatus] = useState('All');
-  const [datalist, setDatalist] = useState(services);
 
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = () => {
+    get('/products').then(result => {
+      setServices([...result]);
+    });
+  };
   const setStatusFilter = status => {
     if (status !== 'All') {
       setDatalist([...services.filter(e => e.category === status)]);
@@ -29,96 +37,48 @@ const Services = () => {
     }
     setStatus(status);
   };
-  useEffect(() => {
-    fetchCategories();
-    fetchServices();
-  }, []);
+  console.log(services);
 
-  const fetchCategories = () => {
-    get('/categories').then(result => {
-      setCategories([...result.categories]);
-    });
-  };
-  const fetchServices = () => {
-    get('/services').then(result => {
-      setServices([...result.services]);
-    });
-  };
-
-  const renderCategories = ({item}) => {
+  const renderServices = ({item}) => {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.listTabs}>
+      <View style={styles.container}>
+        <View style={styles.productContainer}>
           <TouchableOpacity
-            style={[styles.btnTab, status === item.key && styles.btnTabActive]}
             onPress={() => {
-              setStatusFilter(item.key);
+              navigation.navigate('Details', item);
             }}>
-            <Text
-              style={[
-                styles.textTab,
-                status === item.key && styles.textTabActive,
-              ]}>
-              {item.name}
-            </Text>
+            <View style={styles.viewImage}>
+              <Image style={styles.itemImage} source={{uri: item.avatar}} />
+            </View>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
-    );
-  };
-  const renderServices = ({item}) => {
-    const date = moment
-      .utc(item.earliestTimeAvailable)
-      .format('YYYY-MM-DD HH:mm:ss');
-    const date2 = moment(date).startOf().fromNow();
-    return (
-      <SafeAreaView style={styles.dataView}>
-        <View style={styles.itemContainer}>
-          <View style={styles.viewImage}>
-            <Image style={styles.itemImage} source={{uri: item.thumbnail}} />
-          </View>
-          <View style={styles.itemView}>
-            <Text style={styles.itemTitle}>{item.title}</Text>
-            <Text style={styles.itemType}>{item.type}</Text>
-            <View style={styles.timerView}>
-              <Ionicons name="timer-outline" size={20} />
-              <Text style={styles.itemTimer}>{date2}</Text>
-            </View>
-          </View>
-          <View style={styles.ratingContainer}>
-            <View style={styles.heartView}>
-              <Ionicons style={styles.heart} name="heart-outline" size={25} />
-            </View>
-            <View style={styles.ratingView}>
-              <Ionicons style={styles.star} name="star" size={20} />
-              <Text style={styles.txtRating}>{item.rating}</Text>
-            </View>
+        <View style={styles.txtView}>
+          <View style={styles.txtStyle}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.name}>${item.price}</Text>
           </View>
         </View>
-      </SafeAreaView>
+      </View>
     );
   };
 
   return (
-    <SafeAreaView>
-      <View>
-        <FlatList
-          data={categories}
-          renderItem={renderCategories}
-          keyExtractor={(item, index) => index.toString()}
-          showsVerticalScrollIndicator={false}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-        />
-      </View>
-
-      <FlatList
-        data={datalist}
-        renderItem={renderServices}
-        keyExtractor={(item, index) => index.toString()}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-      />
+    <SafeAreaView style={styles.mainContainer}>
+      <ScrollView nestedScrollEnabled={true} style={{width: '100%'}}>
+        <View style={{flexDirection: 'row'}}>
+          <SelectCategory setStatusFilter={setStatusFilter} status={status} />
+        </View>
+        <ScrollView horizontal={true}>
+          <FlatList
+            data={status === 'All' ? services : datalist}
+            renderItem={renderServices}
+            keyExtractor={(item, index) => index.toString()}
+            pagingEnabled
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
+          />
+        </ScrollView>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -126,8 +86,61 @@ const Services = () => {
 export default Services;
 
 const styles = StyleSheet.create({
+  productContainer: {
+    backgroundColor: 'white',
+    width: 300,
+    height: 230,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+
+    elevation: 6,
+  },
   container: {
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 45,
+    paddingVertical: 16,
+  },
+
+  viewImage: {
+    padding: 1,
+  },
+  itemImage: {
+    width: 180,
+    height: 180,
+  },
+  mainContainer: {
+    flex: 1,
+    backgroundColor: '#e0e0e0',
+  },
+  txtView: {
+    justifyContent: 'center',
+    backgroundColor: 'black',
+    width: 300,
+    height: 70,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.27,
+    shadowRadius: 4.65,
+
+    elevation: 6,
+  },
+  txtStyle: {margin: 5},
+  name: {
+    color: 'white',
+    fontSize: 15,
   },
   listTabs: {
     alignSelf: 'center',
@@ -154,7 +167,6 @@ const styles = StyleSheet.create({
 
     elevation: 1,
   },
-
   btnTabActive: {
     backgroundColor: '#0064E5',
     borderRadius: 8,
@@ -175,79 +187,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     size: 14,
   },
-  itemContainer: {
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: '#DEE3E7',
-    borderRadius: 7,
-
-    paddingHorizontal: 8,
-    paddingVertical: 12,
-  },
-  viewImage: {
-    padding: 1,
-  },
-  itemImage: {
-    width: 80,
-    height: 80,
-  },
-  itemView: {
-    flex: 1,
-    paddingHorizontal: 10,
-    justifyContent: 'space-around',
-  },
-  itemTitle: {
-    fontSize: 18,
-    color: '#212224',
-    fontWeight: '700',
-  },
-  ratingView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#e3f2fd',
-  },
-  dataView: {
-    paddingHorizontal: 13,
-    paddingVertical: 8,
-  },
-  ratingContainer: {
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-  },
-  heartView: {
-    alignItems: 'flex-end',
-  },
-  heart: {
-    color: '#A4A8AE',
-  },
-  txtRating: {
-    color: '#0064E5',
-    fontSize: 17,
-    fontWeight: 'bold',
-    fontFamily: 'Product Sans',
-    marginLeft: 5,
-  },
-  star: {
-    color: '#0064E5',
-  },
-  itemType: {
-    color: '#9499A3',
-    fontSize: 13,
-    fontStyle: 'normal',
-    fontFamily: 'Product Sans',
-    fontWeight: '400',
-  },
-  itemTimer: {
-    color: '#9499A3',
-    fontSize: 13,
-    fontStyle: 'normal',
-    fontFamily: 'Product Sans',
-    fontWeight: '400',
-    marginLeft: 4,
-  },
-  timerView: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  allcontainer: {
+    justifyContent: 'center',
   },
 });
