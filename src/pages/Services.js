@@ -37,7 +37,6 @@ const Services = ({navigation}) => {
     }
     setStatus(status);
   };
-  console.log(services);
 
   const renderServices = ({item}) => {
     return (
